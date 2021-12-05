@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 
     srand((unsigned)time(NULL) * getpid());     
     std::string rand1 = gen_random(atoi(argv[1]));
-    srand((unsigned)time(NULL) * getpid());
+    srand((unsigned)time(NULL));
     std::string rand2 = gen_random(atoi(argv[1]));
     
     std::ofstream out1("file1.txt");
