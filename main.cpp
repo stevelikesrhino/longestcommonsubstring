@@ -1,17 +1,10 @@
 #include <cstdlib>
-#include <unistd.h>
 #include <fstream>
 #include <iostream>
+#include <stdint.h>
+#include <ctime>
 
 #define BUFSIZE 4096
-
-inline uint64_t rdtsc()
-{
-    unsigned long a, d;
-    asm volatile("rdtsc"
-                 : "=a"(a), "=d"(d));
-    return a | ((uint64_t)d << 32);
-}
 
 int llcs(char *a, int m, char *b, int n)
 {
@@ -105,7 +98,7 @@ int main(int argc, char **argv)
     std::string file1 = argv[1];
     std::string file2 = argv[2];
 
-    std::ifstream f1(file1, std::ios::in | std::ios::binary);
+    std::ifstream f1(file1, std::ios::in);
     if (!f1.good())
     {
         std::cout << "file 1 read error" << std::endl;
@@ -113,7 +106,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    std::ifstream f2(file2, std::ios::in | std::ios::binary);
+    std::ifstream f2(file2, std::ios::in);
     if (!f2.good())
     {
         std::cout << "file 2 read error" << std::endl;
@@ -140,11 +133,11 @@ int main(int argc, char **argv)
 
     printf("Starting actual longestcommonstring...\n\n");
     int length;
-    long start, end;
+    clock_t start, end;
     //time keeping
-    start = rdtsc();
-    length = llcs2(buf1, length1, buf2, length2);
-    end = rdtsc();
+    start = clock();
+    length = llcs(buf1, length1, buf2, length2);
+    end = clock();
 
     printf("... length of lcs is [ %d ], and it took %ld clock cycles. \n", length, end - start);
 
