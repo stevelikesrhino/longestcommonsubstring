@@ -1,21 +1,17 @@
-#include <unistd.h>
 
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <ctime>
+#include <cstring>
 
 #define BUFSIZE 4096
-
-inline uint64_t rdtsc() {
-    unsigned long a, d;
-    asm volatile("rdtsc" : "=a"(a), "=d"(d));
-    return a | ((uint64_t)d << 32);
-}
 
 int llcs(char *a, int m, char *b, int n) {
     int *LCS = (int *)malloc(sizeof(int) * 2 * (n + 1));
     int result = 0;
     for (int i = 0; i < m; i++) {
+        printf("%ld\n", clock());
         int k = i % 2;
         for (int j = 0; j < n; j++) {
             if (i == 0 || j == 0)
@@ -34,29 +30,41 @@ int llcs(char *a, int m, char *b, int n) {
     return result;
 }
 
-// using two arrays
-int llcs2(char *a, int m, char *b, int n) {
+// using two arrays for maximize space efficiency
+// and improve prefetching
+int llcs2(char *x, int m, char *y, int n) {
     int *LCS0 = (int *)malloc(sizeof(int) * (n + 1));
     int *LCS1 = (int *)malloc(sizeof(int) * (n + 1));
+    // moving outside memory block into stack for spatial
+    // locality
+    char a[m];
+    char b[n];
+    int one = 1; // prefetch "1" to make addition faster
+    memcpy(a, x, m);
+    memcpy(b, y, n);
+    
     int result = 0;
-    for (int i = 0; i < m; i++) {
+    // move DP table initialization outside of main loop
+    // to decrease branch prediction miss rate
+    for(int i=0;i<n;i++){
+        LCS0[i]=0;
+    }
+    LCS1[0]=0;
+    for (int i = 1; i < m; i++) {
+        //printf("%ld\n", clock());
         int k = i % 2;
-        for (int j = 0; j < n; j++) {
-            if (k == 0) {
-                if (i == 0 || j == 0) {
-                    LCS0[j] = 0;
-                } else if (a[i - 1] == b[j - 1]) {
-                    LCS0[j] = LCS1[j - 1] + 1;
-                    if (LCS0[j] > result) result = LCS0[j];
+        for (int j = 1; j < n; j++) {
+            if (k==0) {
+                if (a[i - 1] == b[j - 1]) {
+                    LCS0[j] = LCS1[j - 1] + one;
+                    if (LCS0[j]>result) result = LCS0[j];
                 } else {
                     LCS0[j] = 0;
                 }
             } else {
-                if (i == 0 || j == 0) {
-                    LCS1[j] = 0;
-                } else if (a[i - 1] == b[j - 1]) {
-                    LCS1[j] = LCS0[j - 1] + 1;
-                    if (LCS1[j] > result) result = LCS1[j];
+                if (a[i - 1] == b[j - 1]) {
+                    LCS1[j] = LCS0[j - 1] + one;
+                    if (LCS1[j]>result) result = LCS1[j];
                 } else {
                     LCS1[j] = 0;
                 }
@@ -111,11 +119,11 @@ int main(int argc, char **argv) {
 
     printf("Starting actual longestcommonstring...\n\n");
     int length;
-    long start, end;
+    std::clock_t start, end;
     // time keeping
-    start = rdtsc();
+    start = std::clock();
     length = llcs2(buf1, length1, buf2, length2);
-    end = rdtsc();
+    end = std::clock();
 
     printf("... length of lcs is [ %d ], and it took %ld clock cycles. \n",
            length, end - start);

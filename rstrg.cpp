@@ -29,11 +29,11 @@ int main(int argc, char *argv[]) {
     srand((unsigned)time(NULL));
     std::string rand2 = gen_random(atoi(argv[1]));
     
-    std::ofstream out1("file1.txt");
+    std::ofstream out1("filea.txt");
     out1<<rand1<<std::endl;
     out1.close();
 
-    std::ofstream out2("file2.txt");
+    std::ofstream out2("fileb.txt");
     out2<<rand2<<std::endl;
     out2.close();
     
