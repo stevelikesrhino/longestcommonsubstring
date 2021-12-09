@@ -6,29 +6,7 @@
 
 #define BUFSIZE 4096
 
-int llcs(char *a, int m, char *b, int n) {
-    int *LCS = (int *)malloc(sizeof(int) * 2 * (n + 1));
-    int result = 0;
-    for (int i = 0; i < m; i++) {
-        // printf("%ld\n", clock());
-        int k = i % 2;
-        for (int j = 0; j < n; j++) {
-            if (i == 0 || j == 0)
-                LCS[k * (n + 1) + j] = 0;
-            else if (a[i - 1] == b[j - 1]) {
-                LCS[k * (n + 1) + j] = LCS[(1 - k) * (n + 1) + j - 1] + 1;
-                if (LCS[k * (n + 1) + j] > result)
-                    result = LCS[k * (n + 1) + j];
-            } else {
-                LCS[k * (n + 1) + j] = 0;
-            }
-        }
-    }
-
-    free(LCS);
-    return result;
-}
-
+// *********** TESTING PURPOSE *************
 // using two arrays for maximize space efficiency
 // and improve prefetching
 /*
@@ -71,20 +49,16 @@ int llcs2(char *a, int m, char *b, int n) {
 }
 */
 
-int llcs3(char *a, int m, char *b, int n) {
-    // int *LCS = (int *)malloc(sizeof(int) * 2 * (n + 1));
-    int LCS[2*n+2];
+int llcs(char *a, int m, char *b, int n) {
+    int *LCS = (int *)malloc(sizeof(int) * 2 * (n + 1));
     int result = 0;
-    for(int i=0; i<n;i++){
-        LCS[i]=0;
-    }
-    LCS[n+1]=0;
-    for (int i = 1; i < m; i++) {
+    for (int i = 0; i < m; i++) {
         // printf("%ld\n", clock());
         int k = i % 2;
-        for (int j = 1; j < n; j++) {
-            
-            if (a[i - 1] == b[j - 1]) {
+        for (int j = 0; j < n; j++) {
+            if (i == 0 || j == 0)
+                LCS[k * (n + 1) + j] = 0;
+            else if (a[i - 1] == b[j - 1]) {
                 LCS[k * (n + 1) + j] = LCS[(1 - k) * (n + 1) + j - 1] + 1;
                 if (LCS[k * (n + 1) + j] > result)
                     result = LCS[k * (n + 1) + j];
@@ -94,7 +68,55 @@ int llcs3(char *a, int m, char *b, int n) {
         }
     }
 
-    // free(LCS);
+    free(LCS);
+    return result;
+}
+
+int llcs2(char *a, int m, char *b, int n) {
+    // int *LCS = (int *)malloc(sizeof(int) * 2 * (n + 1));
+    int LCS[2 * n + 2];
+    int result = 0;
+    for (int i = 0; i < n; i++) {
+        LCS[i] = 0;
+    }
+    LCS[n + 1] = 0;
+    for (int i = 1; i < m; i++) {
+        // printf("%ld\n", clock());
+        int k = i % 2;
+        for (int j = 1; j < n; j++) {
+            if (a[i - 1] == b[j - 1]) {
+                LCS[k * (n + 1) + j] = LCS[(1 - k) * (n + 1) + j - 1] + 1;
+                if (LCS[k * (n + 1) + j] > result)
+                    result = LCS[k * (n + 1) + j];
+            } else {
+                LCS[k * (n + 1) + j] = 0;
+            }
+        }
+    }
+    return result;
+}
+
+int llcs3(char *a, int m, char *b, int n) {
+    // int *LCS = (int *)malloc(sizeof(int) * 2 * (n + 1));
+    int LCS[2 * n + 2];
+    int result = 0;
+    for (int i = 0; i < n; i++) {
+        LCS[i] = 0;
+    }
+    LCS[n + 1] = 0;
+    for (int i = 1; i < m; i++) {
+        // printf("%ld\n", clock());
+        int k = i % 2;
+        for (int j = 1; j < n; j++) {
+            if (a[i - 1] == b[j - 1]) {
+                LCS[k * (n + 1) + j] = LCS[(1 - k) * n - k + j] + 1;
+                if (LCS[k * (n + 1) + j] > result)
+                    result = LCS[k * (n + 1) + j];
+            } else {
+                LCS[k * (n + 1) + j] = 0;
+            }
+        }
+    }
     return result;
 }
 
