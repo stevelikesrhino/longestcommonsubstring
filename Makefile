@@ -1,13 +1,13 @@
 all: llcs rand_gen
 
-llcs: main.o
-	g++ main.o -O2 -mavx2 -o llcs
+llcs: main_mt.o
+	g++ main_mt.o -O2 -mavx2 -lpthread -o llcs
 
 rand_gen: rstrg.o
 	g++ rstrg.o -o rand_gen
 
-main.o: main.cpp
-	g++ -c -O2 -mavx2 main.cpp
+main_mt.o: main_mt.cpp
+	g++ -c -O2 -mavx2 main_mt.cpp -lpthread
 
 rstrg.o: rstrg.cpp
 	g++ -c rstrg.cpp
