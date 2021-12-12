@@ -4,10 +4,9 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <thread>
 
-#define BUFSIZE 4096
-#define THREADS 16
+#include <thread>
+#include <mutex>
 
 int llcs(char *a, int m, char *b, int n) {
     int *LCS = (int *)malloc(sizeof(int) * 2 * (n + 1));
@@ -56,6 +55,8 @@ int llcs2(char *a, int m, char *b, int n) {
     return result;
 }
 
+std::mutex mtx;
+
 void worker(int *res, char *a, char *b, int s1, int s2, int size) {
     int deez = 0;
     int max = 0;
@@ -68,7 +69,9 @@ void worker(int *res, char *a, char *b, int s1, int s2, int size) {
         }
         // printf("%d   ", deez);
     }
+    mtx.lock();
     *res = std::max(max, *res);
+    mtx.unlock();
 }
 
 int llcs_mt(char *a, int m, char *b, int n) {
