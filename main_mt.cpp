@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <cstring>
+#include <chrono>
 #include <ctime>
 #include <fstream>
 #include <iostream>
@@ -57,13 +58,12 @@ int llcs2(char *a, int m, char *b, int n) {
 
 void worker(int *res, char *a, char *b, int s1, int s2, int size) {
     int deez = 0;
-    int last = 0;
     int max = 0;
     for (int j = 0; j < size; j++) {
         if (a[s1 + j] == b[s2 + j]) {
             deez++;
             if (deez > max) max = deez;
-        } else {
+        }else{
             deez = 0;
         }
         // printf("%d   ", deez);
@@ -88,6 +88,8 @@ int llcs_mt(char *a, int m, char *b, int n) {
     return max;
 }
 
+
+// Single-threaded testbench for the same algorithm
 int llcs_st(char *a, int m, char *b, int n){
     int max = 0;
     //std::cout<<"N = "<<n<<std::endl;
@@ -145,20 +147,13 @@ int main(int argc, char **argv) {
 
     printf("Starting actual longestcommonstring...\n\n");
     int length;
-    std::clock_t start, end;
-    // time keeping
-    // for(int i = 0; i<length1; i++){
-    //     __builtin_prefetch(buf1+i);
-    // }
-    // for(int i = 0; i<length2; i++){
-    //     __builtin_prefetch(buf2+i);
-    // }
-    start = std::clock();
+    auto start = std::chrono::system_clock::now();
     length = llcs_mt(buf1, length1, buf2, length2);
-    end = std::clock();
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-start;
 
-    printf("... length of lcs is [ %d ], and it took %ld clock cycles. \n",
-           length, end - start);
+    printf("... length of lcs is [ %d ], and it took %f seconds. \n",
+           length, elapsed_seconds);
 
     
     // free(buf1);
