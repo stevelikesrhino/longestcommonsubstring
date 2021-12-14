@@ -4,9 +4,12 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <unistd.h>
 
 #include <thread>
 #include <mutex>
+#include <atomic>
+#include <vector>
 
 int llcs(char *a, int m, char *b, int n) {
     int *LCS = (int *)malloc(sizeof(int) * 2 * (n + 1));
@@ -31,7 +34,7 @@ int llcs(char *a, int m, char *b, int n) {
     return result;
 }
 
-int llcs2(char *a, int m, char *b, int n) {
+int llcs_mod4(char *a, int m, char *b, int n) {
     // int *LCS = (int *)malloc(sizeof(int) * 2 * (n + 1));
     int LCS[2 * n + 2];
     int result = 0;
@@ -57,9 +60,11 @@ int llcs2(char *a, int m, char *b, int n) {
 
 std::mutex mtx;
 
-void worker(int *res, char *a, char *b, int s1, int s2, int size) {
+void worker(int *res, char *a, char *b, int i, int size) {
     int deez = 0;
     int max = 0;
+    int s1 = std::max(0, i);
+    int s2 = std::max(-i, 0);
     for (int j = 0; j < size; j++) {
         if (a[s1 + j] == b[s2 + j]) {
             deez++;
@@ -74,25 +79,25 @@ void worker(int *res, char *a, char *b, int s1, int s2, int size) {
     mtx.unlock();
 }
 
-int llcs_mt(char *a, int m, char *b, int n) {
+
+
+int mt_driver(char *a, int m, char *b, int n) {
     int max = 0;
     //std::cout<<"N = "<<n<<std::endl;
     int size = 0;
     for(int i = -n+1; i<m; i++){
-        int s1 = std::max(0, i);
-        int s2 = std::max(-i, 0);
+        // printf("size = %d\n", size);
         if(i<0) size++;
         if(i>n-1) size--;
-        // printf("size = %d\n", size);
-        std::thread t(worker, &max, a, b, s1, s2, size);
+        std::thread t(worker, &max, a, b, i, size);
         t.detach();
     }
-
     return max;
 }
 
 
 // Single-threaded testbench for the same algorithm
+/*
 int llcs_st(char *a, int m, char *b, int n){
     int max = 0;
     //std::cout<<"N = "<<n<<std::endl;
@@ -103,10 +108,11 @@ int llcs_st(char *a, int m, char *b, int n){
         if(i<0) size++;
         if(i>n-1) size--;
         //std::cout<<"size"<<"____"<<size<<std::endl;
-        worker(&max, a, b, s1, s2, size);
+        worker(&max, a, b, i, size);
     }
     return max;
 }
+*/
 
 int main(int argc, char **argv) {
     if (argc < 3) {
@@ -151,14 +157,14 @@ int main(int argc, char **argv) {
     printf("Starting actual longestcommonstring...\n\n");
     int length;
     auto start = std::chrono::system_clock::now();
-    length = llcs_mt(buf1, length1, buf2, length2);
+    length = mt_driver(buf1, length1, buf2, length2);
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end-start;
 
     printf("... length of lcs is [ %d ], and it took %f seconds. \n",
            length, elapsed_seconds);
 
-    
+    // sleep(1);
     // free(buf1);
     // free(buf2);
     f1.close();
